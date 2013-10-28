@@ -1,6 +1,7 @@
 #!/bin/bash 
 #set -x
 
+# need target folder
 if [[ $# -eq 0 ]] ; then
     echo 'usage: flowarchive folder/'
     exit 0
@@ -10,7 +11,7 @@ function convimg() {
   clear
   echo "IMG"
   echo "————————————————————"
-  for doc in `find $tmp \( -iname \*.png -o -iname \*.jpg -o -iname \*.jpeg -o -iname \*.tiff \) -type f`
+  for doc in `find $tmp \( -iname \*.png -o -iname \*.jpg -o -iname \*.jpeg -o -iname \*.tif -o -iname \*.tiff \) -type f`
   do
     filename=$(basename $doc) 
     filetime=$(stat -f "%Sm" -t "%s" $doc)
