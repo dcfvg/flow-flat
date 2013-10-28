@@ -1,0 +1,63 @@
+#!/bin/bash 
+#set -x
+
+if [[ $# -eq 0 ]] ; then
+    echo 'usage: flowarchive folder/'
+    exit 0
+fi
+
+function convimg() {
+  clear
+  echo "IMG"
+  echo "————————————————————"
+  for doc in `find $tmp \( -iname \*.png -o -iname \*.jpg -o -iname \*.jpeg -o -iname \*.tiff \) -type f`
+  do
+    filename=$(basename $doc) 
+    filetime=$(stat -f "%Sm" -t "%s" $doc)
+    convert -monitor -format jpeg $doc "$outbox/$filetime-$filename.jpeg"
+  done
+}
+function convpdf(){
+  clear
+  echo "PDF"
+  echo "————————————————————"
+
+  for doc in `find $tmp -iname "*.pdf" -type f`
+  do
+    filename=$(basename $doc)
+    filetime=$(stat -f "%Sm" -t "%s" $doc)
+    convert -monitor -density 300 -format jpeg $doc "$outbox/$filetime-$filename.jpeg"
+  done
+}
+function convmov(){
+  echo "MOV"
+  echo "————————————————————"
+
+  for doc in `find $tmp \( -iname \*.mp4 -o -iname \*.mov -o -iname \*.avi -o -iname \*.mpeg \) -type f`
+  do
+    filename=$(basename $doc)
+    filetime=$(stat -f "%Sm" -t "%s" $doc) 
+    ffmpeg -i $doc -y -an -qscale 0 -f image2 -r 1 "$outbox/$filetime-$filename_%05d.jpg"
+  done
+}
+
+sourcepath=$1
+sourcename=$(basename $sourcepath)
+timestamp=$(date +"%s")
+tmp="tmp-$timestamp"
+outbox="result-$sourcename"
+
+
+# create tmp and result folder
+rm -rfv $outbox $tmp
+mkdir -v $outbox
+
+cp -rv $sourcepath $tmp
+
+detox -v -r tmp/ # sanitize filenames
+
+convimg
+convpdf
+convmov
+
+rm -rfv $tmp
